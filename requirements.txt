@@ -1,0 +1,8 @@
+apache-airflow==2.5.1
+pyspark
+wbdata
+pandas
+requests
+psycopg2-binary
+sqlalchemy
+sqlalchemy-utils

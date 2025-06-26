@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+# Entornos
+.env
+.venv/
+# Docker
+*.log
+.pytest_cache/
+airflow/airflow.db
