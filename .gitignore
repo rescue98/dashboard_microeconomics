@@ -1,10 +1,19 @@
-# Python
+# Virtualenv
+.venv/
+
+# Python cache
 __pycache__/
 *.py[cod]
-# Entornos
+
+# Datos y logs
+data/
+airflow/logs/
+
+# Variables sensibles
 .env
-.venv/
-# Docker
-*.log
-.pytest_cache/
-airflow/airflow.db
+
+# Jars temporales
+jars/
+
+# Docker override
+docker-compose.override.yml

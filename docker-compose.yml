@@ -1,36 +1,82 @@
-version: '3.7'
+version: '3.8'
 services:
+
   postgres:
-    image: postgres:14
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+    image: postgres:15
+    env_file: .env
     volumes:
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
-  airflow:
+  spark-master:
     build:
       context: .
-      dockerfile: docker/airflow/Dockerfile
+      dockerfile: Dockerfile-spark
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "7077:7077"
+      - "8081:8081"
+    volumes:
+      - ./data/raw:/opt/data/raw
+      - ./jars:/opt/bitnami/spark/jars
+
+  spark-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile-spark
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    volumes:
+      - ./data/raw:/opt/data/raw
+      - ./jars:/opt/bitnami/spark/jars
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile-airflow
+    env_file: .env
     depends_on:
       - postgres
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./src:/opt/airflow/src
-      - ./logs:/opt/airflow/logs
-      - ./plugins:/opt/airflow/plugins
-      - ./.env:/.env
+      - spark-master
     ports:
       - "8080:8080"
-    command: >
-      bash -c "airflow db init &&
-               airflow users create --username admin --password admin \
-                 --firstname Admin --lastname User --role Admin --email admin@example.com &&
-               airflow scheduler & airflow webserver"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./spark/scripts:/opt/airflow/scripts
+      - ./jars:/opt/airflow/jars
+      - ./data/raw:/opt/data/raw
+    command: webserver
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile-airflow
+    env_file: .env
+    depends_on:
+      - airflow-webserver
+      - postgres
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./spark/scripts:/opt/airflow/scripts
+      - ./jars:/opt/airflow/jars
+      - ./data/raw:/opt/data/raw
+    command: scheduler
+
+  general:
+    build:
+      context: .
+      dockerfile: Dockerfile-general
+    volumes:
+      - ./streamlit_app:/app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

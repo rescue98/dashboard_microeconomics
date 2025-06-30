@@ -1,0 +1,17 @@
+# Dashboard / Visualización
+streamlit==1.25.0
+altair==4.2.0
+plotly==5.15.0
+
+# Machine Learning
+scikit-learn==1.3.2
+joblib==1.3.1
+
+# Ciencia de datos
+matplotlib==3.7.1
+seaborn==0.12.2
+
+# Testing / Linting
+pytest==7.4.0
+black==23.9.1
+flake8==6.1.0

@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+ENV PIP_ROOT_USER_ACTION=ignore
+
+COPY requirements-general.txt /requirements-general.txt
+RUN pip install --no-cache-dir -r /requirements-general.txt
+
+COPY ./streamlit_app /app
+
+EXPOSE 8501
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
