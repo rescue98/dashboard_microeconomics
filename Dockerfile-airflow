@@ -5,22 +5,15 @@ RUN apt-get update && \
     apt-get install -y gcc libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Copia las dependencias
 COPY requirements-airflow.txt /requirements-airflow.txt
-
-# Instala pip deps como airflow (usa --user)
 USER airflow
 RUN pip install --user --no-cache-dir -r /requirements-airflow.txt
-
-# Vuelve a root para copiar el código
 USER root
 COPY ./airflow/dags    /opt/airflow/dags
 COPY ./airflow/plugins /opt/airflow/plugins
 COPY ./spark/scripts   /opt/airflow/scripts
 COPY ./jars            /opt/airflow/jars
 COPY ./mlops /opt/airflow/mlops
-
-# Ajusta permisos
 RUN chown -R airflow: /opt/airflow
 
 USER airflow
