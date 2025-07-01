@@ -6,8 +6,6 @@ __pycache__/
 data/
 airflow/logs/
 
-.env
-
 jars/
 
 docker-compose.override.yml
