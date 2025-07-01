@@ -21,7 +21,6 @@ def read_raw_files(spark, path):
             dfs.append(df)
     if not dfs:
         raise ValueError(f"No raw files found in {path}")
-    # Une todos permitiendo columnas faltantes
     base = dfs[0]
     if len(dfs) > 1:
         base = base.unionByName(*dfs[1:], allowMissingColumns=True)
@@ -35,21 +34,16 @@ def main(args):
                  "/opt/bitnami/spark/jars/spark-excel_2.12-0.13.5.jar"
              ]))
              .getOrCreate())
-
-    # 1) Raw (CSV + Excel)
+    
     df_raw = read_raw_files(spark, args.raw_path)
 
-    # 2) World Bank JSON (viene de XCom)
     wb_json = json.loads(args.json_xcom)
     df_wb = (spark.createDataFrame(wb_json[1])
              .selectExpr("country.id AS country_code", "date AS year", "value")
              .withColumn("value", col("value").cast("double"))
              .withColumn("source", lit("worldbank")))
-
-    # 3) Union final
+    
     df_all = df_raw.unionByName(df_wb, allowMissingColumns=True)
-
-    # 4) Guarda en PostgreSQL
     (df_all.write
        .format("jdbc")
        .option("url", args.jdbc_url)

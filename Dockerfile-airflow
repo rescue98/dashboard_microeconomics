@@ -18,6 +18,7 @@ COPY ./airflow/dags    /opt/airflow/dags
 COPY ./airflow/plugins /opt/airflow/plugins
 COPY ./spark/scripts   /opt/airflow/scripts
 COPY ./jars            /opt/airflow/jars
+COPY ./mlops /opt/airflow/mlops
 
 # Ajusta permisos
 RUN chown -R airflow: /opt/airflow

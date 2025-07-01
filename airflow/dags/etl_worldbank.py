@@ -21,7 +21,6 @@ with DAG(
     max_active_runs=1,
 ) as dag:
 
-    # 1) Descargar JSON de World Bank
     fetch_worldbank = SimpleHttpOperator(
         task_id='fetch_worldbank',
         http_conn_id='worldbank_api',
@@ -30,7 +29,6 @@ with DAG(
         xcom_push=True,
     )
 
-    # 2) Ejecutar Spark para procesar CSV + JSON
     run_spark_etl = SparkSubmitOperator(
     task_id='run_spark_etl',
     application='/opt/airflow/scripts/etl_spark.py',
@@ -43,10 +41,8 @@ with DAG(
         '--db_user', '{{ var.value.POSTGRES_USER }}',
         '--db_pass', '{{ var.value.POSTGRES_PASSWORD }}'
     ],
-    # El parámetro `jars` ya lo añade el SparkSession en el script
     )
 
-    # 3) Validar existencia de la tabla (opcional)
     create_table = PostgresOperator(
         task_id='create_table',
         postgres_conn_id='postgres_default',
